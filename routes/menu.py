@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from functools import wraps
-from app import mysql
+
 
 menu_bp = Blueprint('menu', __name__)
 
@@ -15,6 +15,7 @@ def login_required(f):
 @menu_bp.route('/menu')
 @login_required
 def lista():
+    from app import mysql
     cur = mysql.connection.cursor()
     cur.execute("""
         SELECT p.*, c.nombre as categoria FROM plato p

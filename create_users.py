@@ -21,7 +21,8 @@ db = MySQLdb.connect(
     host=os.getenv('MYSQL_HOST', 'localhost'),
     user=os.getenv('MYSQL_USER', 'root'),
     passwd=os.getenv('MYSQL_PASSWORD', ''),
-    db=os.getenv('MYSQL_DB', 'restaurante_db')
+    db=os.getenv('MYSQL_DB', 'restaurante_db'),
+    port=int(os.getenv('PORT', 3306))
 )
 cur = db.cursor()
 

@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from app import mysql, bcrypt
+
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    from app import mysql, bcrypt
     if request.method == 'POST':
         correo   = request.form['correo']
         password = request.form['password']

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from functools import wraps
-from app import mysql
+
 
 pedidos_bp = Blueprint('pedidos', __name__)
 
@@ -15,6 +15,7 @@ def login_required(f):
 @pedidos_bp.route('/pedidos')
 @login_required
 def lista():
+    from app import mysql
     cur = mysql.connection.cursor()
     cur.execute("""
         SELECT p.*, c.nombre as cliente, m.numero as mesa, e.nombre as empleado
@@ -31,6 +32,7 @@ def lista():
 @pedidos_bp.route('/pedidos/nuevo', methods=['GET', 'POST'])
 @login_required
 def nuevo():
+    from app import mysql
     cur = mysql.connection.cursor()
     if request.method == 'POST':
         cur.execute("""
@@ -74,6 +76,7 @@ def nuevo():
 @pedidos_bp.route('/pedidos/estado/<int:id>/<estado>')
 @login_required
 def cambiar_estado(id, estado):
+    from app import mysql
     estados_validos = ['pendiente', 'en preparacion', 'servido', 'pagado']
     if estado in estados_validos:
         cur = mysql.connection.cursor()

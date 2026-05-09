@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from functools import wraps
-from app import mysql
 
 factura_bp = Blueprint('factura', __name__)
 
@@ -15,6 +14,7 @@ def login_required(f):
 @factura_bp.route('/factura/<int:num_pedido>', methods=['GET', 'POST'])
 @login_required
 def generar(num_pedido):
+    from app import mysql
     cur = mysql.connection.cursor()
     if request.method == 'POST':
         cur.execute("""
@@ -61,6 +61,7 @@ def generar(num_pedido):
 @factura_bp.route('/factura/ver/<int:num_pedido>')
 @login_required
 def ver(num_pedido):
+    from app import mysql
     cur = mysql.connection.cursor()
     cur.execute("""
         SELECT f.*, c.nombre as cliente, m.numero as mesa

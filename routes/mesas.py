@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, session
 from functools import wraps
-from app import mysql
+
 
 mesas_bp = Blueprint('mesas', __name__)
 
@@ -15,6 +15,7 @@ def login_required(f):
 @mesas_bp.route('/mesas')
 @login_required
 def lista():
+    from app import mysql
     cur = mysql.connection.cursor()
     cur.execute("""
         SELECT m.*, COUNT(p.num_pedido) as pedidos_activos
