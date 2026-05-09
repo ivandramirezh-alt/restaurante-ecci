@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Pedidos — El Buen Sabor{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Pedidos</h1>
+  <a href="{{ url_for('pedidos.nuevo') }}" class="btn btn-primary">+ Nuevo Pedido</a>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Cliente</th>
+        <th>Mesa</th>
+        <th>Mesero</th>
+        <th>Fecha</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in pedidos %}
+      <tr>
+        <td>{{ p.num_pedido }}</td>
+        <td>{{ p.cliente }}</td>
+        <td>Mesa {{ p.mesa }}</td>
+        <td>{{ p.empleado }}</td>
+        <td>{{ p.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>
+          <span class="status status-{{ p.estado | replace(' ','-') }}">
+            {{ p.estado }}
+          </span>
+        </td>
+        <td>
+          <div class="td-actions">
+            {% if p.estado == 'pendiente' %}
+              <a href="{{ url_for('pedidos.cambiar_estado', id=p.num_pedido, estado='en preparacion') }}"
+                 class="btn btn-sm btn-outline">En preparación</a>
+            {% elif p.estado == 'en preparacion' %}
+              <a href="{{ url_for('pedidos.cambiar_estado', id=p.num_pedido, estado='servido') }}"
+                 class="btn btn-sm btn-outline">Servido</a>
+            {% elif p.estado == 'servido' %}
+              <a href="{{ url_for('factura.generar', num_pedido=p.num_pedido) }}"
+                 class="btn btn-sm btn-success">Facturar</a>
+            {% elif p.estado == 'pagado' %}
+              <a href="{{ url_for('factura.ver', num_pedido=p.num_pedido) }}"
+                 class="btn btn-sm btn-outline">Ver Factura</a>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="7" style="text-align:center; color:var(--muted); padding:40px;">
+          No hay pedidos registrados aún.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

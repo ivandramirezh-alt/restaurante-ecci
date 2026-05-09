@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Editar' if plato else 'Nuevo' }} Plato — El Buen Sabor{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ 'Editar Plato' if plato else 'Nuevo Plato' }}</h1>
+  <a href="{{ url_for('menu.lista') }}" class="btn btn-outline">← Volver</a>
+</div>
+
+<div class="form-card">
+  <form method="POST">
+    <div class="form-group">
+      <label>Categoría</label>
+      <select name="id_categoria" required>
+        <option value="">Seleccionar categoría...</option>
+        {% for c in categorias %}
+          <option value="{{ c.id_categoria }}"
+            {{ 'selected' if plato and plato.id_categoria == c.id_categoria }}>
+            {{ c.nombre }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Nombre del plato</label>
+      <input type="text" name="nombre" required
+             value="{{ plato.nombre if plato else '' }}"
+             placeholder="Ej: Bandeja Paisa">
+    </div>
+
+    <div class="form-group">
+      <label>Descripción</label>
+      <textarea name="descripcion" placeholder="Ingredientes o descripción...">{{ plato.descripcion if plato else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Precio (COP)</label>
+      <input type="number" name="precio" required min="0" step="100"
+             value="{{ plato.precio if plato else '' }}"
+             placeholder="Ej: 18000">
+    </div>
+
+    <div class="form-group">
+      <div class="form-check">
+        <input type="checkbox" name="disponible" id="disponible"
+               {{ 'checked' if not plato or plato.disponible }}>
+        <label for="disponible">Disponible en el menú</label>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+      {{ 'Guardar cambios' if plato else 'Agregar plato' }}
+    </button>
+  </form>
+</div>
+{% endblock %}

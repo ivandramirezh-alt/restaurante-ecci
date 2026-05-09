@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Menú — El Buen Sabor{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Menú</h1>
+  {% if session.user_rol == 'admin' %}
+  <a href="{{ url_for('menu.nuevo') }}" class="btn btn-primary">+ Agregar Plato</a>
+  {% endif %}
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Plato</th>
+        <th>Categoría</th>
+        <th>Descripción</th>
+        <th>Precio</th>
+        <th>Disponible</th>
+        {% if session.user_rol == 'admin' %}<th>Acciones</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in platos %}
+      <tr>
+        <td><strong>{{ p.nombre }}</strong></td>
+        <td>{{ p.categoria }}</td>
+        <td style="color:var(--muted); font-size:13px;">{{ p.descripcion or '—' }}</td>
+        <td><strong style="color:var(--accent);">${{ "{:,.0f}".format(p.precio) }}</strong></td>
+        <td>
+          {% if p.disponible %}
+            <span class="status status-disponible">Sí</span>
+          {% else %}
+            <span class="status status-ocupada">No</span>
+          {% endif %}
+        </td>
+        {% if session.user_rol == 'admin' %}
+        <td>
+          <div class="td-actions">
+            <a href="{{ url_for('menu.editar', id=p.id_plato) }}"
+               class="btn btn-sm btn-outline">Editar</a>
+            <a href="{{ url_for('menu.toggle', id=p.id_plato) }}"
+               class="btn btn-sm btn-outline">
+              {{ 'Deshabilitar' if p.disponible else 'Habilitar' }}
+            </a>
+          </div>
+        </td>
+        {% endif %}
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" style="text-align:center; color:var(--muted); padding:40px;">
+          No hay platos registrados.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

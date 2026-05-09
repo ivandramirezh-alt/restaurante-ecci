@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Factura #{{ factura.num_pedido }} — El Buen Sabor{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Factura #{{ factura.num_pedido }}</h1>
+  <a href="{{ url_for('pedidos.lista') }}" class="btn btn-outline">← Pedidos</a>
+</div>
+
+<div class="factura-box">
+  <div class="factura-header">
+    <h2>🍽️ El Buen Sabor</h2>
+    <p style="color:var(--muted); font-size:13px; margin-top:6px;">
+      Cliente: <strong style="color:var(--text);">{{ factura.cliente }}</strong> &nbsp;|&nbsp;
+      Mesa: <strong style="color:var(--text);">{{ factura.mesa }}</strong>
+    </p>
+    <p style="color:var(--muted); font-size:12px; margin-top:4px;">
+      Fecha: {{ factura.fecha_pago.strftime('%d/%m/%Y %H:%M') }} &nbsp;|&nbsp;
+      Método: {{ factura.metodo_pago }}
+    </p>
+  </div>
+
+  <div class="table-wrap" style="margin-bottom:20px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Plato</th>
+          <th style="text-align:center;">Cant.</th>
+          <th style="text-align:right;">Precio Unit.</th>
+          <th style="text-align:right;">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in detalle %}
+        <tr>
+          <td>{{ d.plato }}</td>
+          <td style="text-align:center;">{{ d.cantidad }}</td>
+          <td style="text-align:right;">${{ "{:,.0f}".format(d.precio_unit) }}</td>
+          <td style="text-align:right;">${{ "{:,.0f}".format(d.cantidad * d.precio_unit) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="factura-total-row">
+    <span style="color:var(--muted);">Subtotal</span>
+    <span>${{ "{:,.0f}".format(factura.subtotal) }}</span>
+  </div>
+  <div class="factura-total-row">
+    <span style="color:var(--muted);">IVA (19%)</span>
+    <span>${{ "{:,.0f}".format(factura.iva) }}</span>
+  </div>
+  <div class="factura-total-row grand">
+    <span>TOTAL</span>
+    <span>${{ "{:,.0f}".format(factura.total) }}</span>
+  </div>
+
+  <div style="margin-top:24px; text-align:center;">
+    <span class="status status-pagado" style="font-size:13px; padding:6px 20px;">
+      ✓ PAGADO
+    </span>
+  </div>
+
+  <div style="margin-top:20px; text-align:center;">
+    <button onclick="window.print()" class="btn btn-outline btn-sm">🖨️ Imprimir</button>
+  </div>
+</div>
+{% endblock %}

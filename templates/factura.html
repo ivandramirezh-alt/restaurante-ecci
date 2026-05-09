@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Generar Factura — El Buen Sabor{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Generar Factura</h1>
+  <a href="{{ url_for('pedidos.lista') }}" class="btn btn-outline">← Volver</a>
+</div>
+
+<div class="factura-box">
+  <div class="factura-header">
+    <h2>🍽️ El Buen Sabor</h2>
+    <p style="color:var(--muted); font-size:13px; margin-top:4px;">
+      Pedido #{{ pedido.num_pedido }} — Mesa {{ pedido.mesa }} — {{ pedido.cliente }}
+    </p>
+  </div>
+
+  <div class="table-wrap" style="margin-bottom:20px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Plato</th>
+          <th style="text-align:center;">Cant.</th>
+          <th style="text-align:right;">Precio Unit.</th>
+          <th style="text-align:right;">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in detalle %}
+        <tr>
+          <td>{{ d.plato }}</td>
+          <td style="text-align:center;">{{ d.cantidad }}</td>
+          <td style="text-align:right;">${{ "{:,.0f}".format(d.precio_unit) }}</td>
+          <td style="text-align:right;">${{ "{:,.0f}".format(d.cantidad * d.precio_unit) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="factura-total-row">
+    <span style="color:var(--muted);">Subtotal</span>
+    <span>${{ "{:,.0f}".format(subtotal) }}</span>
+  </div>
+  <div class="factura-total-row">
+    <span style="color:var(--muted);">IVA (19%)</span>
+    <span>${{ "{:,.0f}".format(iva) }}</span>
+  </div>
+  <div class="factura-total-row grand">
+    <span>TOTAL</span>
+    <span>${{ "{:,.0f}".format(total) }}</span>
+  </div>
+
+  <form method="POST" style="margin-top:24px;">
+    <div class="form-group">
+      <label>Método de pago</label>
+      <select name="metodo_pago" required>
+        <option value="efectivo">Efectivo</option>
+        <option value="tarjeta">Tarjeta</option>
+        <option value="transferencia">Transferencia</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-success" style="width:100%;justify-content:center;">
+      ✓ Confirmar Pago
+    </button>
+  </form>
+</div>
+{% endblock %}

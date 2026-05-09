@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Nuevo Pedido — El Buen Sabor{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Nuevo Pedido</h1>
+  <a href="{{ url_for('pedidos.lista') }}" class="btn btn-outline">← Volver</a>
+</div>
+
+<div class="form-card">
+  <form method="POST">
+    <div class="form-group">
+      <label>Cliente</label>
+      <select name="id_cliente" required>
+        <option value="">Seleccionar cliente...</option>
+        {% for c in clientes %}
+          <option value="{{ c.id_cliente }}">{{ c.nombre }} — {{ c.telefono }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Mesa</label>
+      <select name="id_mesa" required>
+        <option value="">Seleccionar mesa...</option>
+        {% for m in mesas %}
+          <option value="{{ m.id_mesa }}">Mesa {{ m.numero }} ({{ m.capacidad }} personas)</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Mesero</label>
+      <select name="id_empleado" required>
+        <option value="">Seleccionar mesero...</option>
+        {% for e in empleados %}
+          <option value="{{ e.id_empleado }}">{{ e.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Platos del pedido</label>
+
+      <!-- Template oculto para JS -->
+      <template id="plato-template">
+        <option value="">Seleccionar plato...</option>
+        {% for p in platos %}
+          <option value="{{ p.id_plato }}">
+            {{ p.nombre }} — ${{ "{:,.0f}".format(p.precio) }} ({{ p.categoria }})
+          </option>
+        {% endfor %}
+      </template>
+
+      <div id="platos-lista" class="platos-list">
+        <div class="plato-row">
+          <select name="id_plato[]" required>
+            <option value="">Seleccionar plato...</option>
+            {% for p in platos %}
+              <option value="{{ p.id_plato }}">
+                {{ p.nombre }} — ${{ "{:,.0f}".format(p.precio) }} ({{ p.categoria }})
+              </option>
+            {% endfor %}
+          </select>
+          <input type="number" name="cantidad[]" value="1" min="1" required>
+          <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-outline btn-sm" style="margin-top:10px;"
+              onclick="agregarPlato()">
+        + Agregar plato
+      </button>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+      Crear Pedido
+    </button>
+  </form>
+</div>
+{% endblock %}
