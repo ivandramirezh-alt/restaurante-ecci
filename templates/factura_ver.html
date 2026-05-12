@@ -61,8 +61,13 @@
     </span>
   </div>
 
-  <div style="margin-top:20px; text-align:center;">
-    <button onclick="window.print()" class="btn btn-outline btn-sm">🖨️ Imprimir</button>
+  <div style="margin-top:20px; text-align:center; display: flex; flex-direction: column; gap: 12px; align-items: center;">
+    <button onclick="window.print()" class="btn btn-outline btn-sm">
+      <i class="fas fa-print"></i> Imprimir Factura
+    </button>
+    <a href="{{ url_for('index') }}" class="btn btn-primary" style="width: 100%; max-width: 250px; justify-content: center;">
+      <i class="fas fa-home"></i> Ir al Menú Principal
+    </a>
   </div>
 </div>
 {% endblock %}

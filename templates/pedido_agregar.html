@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Agregar Items al Pedido #{{ pedido.num_pedido }} — El Buen Sabor{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="fas fa-plus-circle"></i> Añadir al Pedido #{{ pedido.num_pedido }}</h1>
+  <a href="{{ url_for('pedidos.lista') }}" class="btn btn-outline">← Volver</a>
+</div>
+
+<div class="form-card" style="max-width: 800px;">
+  <div style="margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
+    <p style="color: var(--muted); font-size: 14px;">
+      Cliente: <strong style="color: var(--text);">{{ pedido.cliente }}</strong> | 
+      Mesa: <strong style="color: var(--text);">{{ pedido.mesa }}</strong>
+    </p>
+  </div>
+
+  <form method="POST">
+    <div class="form-group">
+      <label><i class="fas fa-hamburger"></i> Seleccionar Platos Adicionales</label>
+      
+      <div id="platos-lista" class="platos-list-modern">
+        <div class="plato-row-modern">
+          <div class="plato-select-wrap">
+             <i class="fas fa-search"></i>
+             <select name="id_plato[]" required>
+                <option value="">Buscar plato...</option>
+                {% for p in platos %}
+                  <option value="{{ p.id_plato }}">
+                    {{ p.nombre }} — ${{ "{:,.0f}".format(p.precio) }}
+                  </option>
+                {% endfor %}
+              </select>
+          </div>
+          <input type="number" name="cantidad[]" value="1" min="1" required class="qty-input">
+          <button type="button" class="btn-remove" onclick="this.closest('.plato-row-modern').remove()"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-outline btn-sm" style="margin-top:15px; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;" onclick="agregarFilaPlato()">
+        <i class="fas fa-plus"></i> Agregar otra línea de platos
+      </button>
+    </div>
+
+    <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+      <button type="submit" class="btn btn-primary btn-lg" style="width:100%; justify-content:center;">
+        <i class="fas fa-save"></i> Actualizar Pedido
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+function agregarFilaPlato() {
+  const container = document.getElementById('platos-lista');
+  const div = document.createElement('div');
+  div.className = 'plato-row-modern';
+  const originalSelect = document.querySelector('select[name="id_plato[]"]');
+  const optionsHtml = originalSelect.innerHTML;
+
+  div.innerHTML = `
+    <div class="plato-select-wrap">
+       <i class="fas fa-search"></i>
+       <select name="id_plato[]" required>${optionsHtml}</select>
+    </div>
+    <input type="number" name="cantidad[]" value="1" min="1" required class="qty-input">
+    <button type="button" class="btn-remove" onclick="this.closest('.plato-row-modern').remove()"><i class="fas fa-trash"></i></button>
+  `;
+  container.appendChild(div);
+}
+</script>
+
+<style>
+.platos-list-modern { display: flex; flex-direction: column; gap: 12px; }
+.plato-row-modern { display: flex; gap: 10px; align-items: center; animation: fadeIn 0.3s ease; }
+.plato-select-wrap { flex: 1; position: relative; display: flex; align-items: center; }
+.plato-select-wrap i { position: absolute; left: 12px; color: var(--muted); font-size: 12px; z-index: 1; }
+.plato-select-wrap select { padding-left: 35px !important; width: 100%; }
+.qty-input { width: 80px !important; text-align: center; font-weight: 600; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}

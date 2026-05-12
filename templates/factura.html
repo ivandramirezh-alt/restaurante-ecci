@@ -51,17 +51,58 @@
   </div>
 
   <form method="POST" style="margin-top:24px;">
-    <div class="form-group">
-      <label>Método de pago</label>
-      <select name="metodo_pago" required>
-        <option value="efectivo">Efectivo</option>
-        <option value="tarjeta">Tarjeta</option>
-        <option value="transferencia">Transferencia</option>
-      </select>
+    <div class="form-grid-billing" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+      <div class="form-group">
+        <label><i class="fas fa-wallet"></i> Método de pago</label>
+        <select name="metodo_pago" id="metodo_pago" required>
+          <option value="efectivo">Efectivo</option>
+          <option value="tarjeta">Tarjeta</option>
+          <option value="transferencia">Transferencia</option>
+        </select>
+      </div>
+      <div class="form-group" id="received-group">
+        <label><i class="fas fa-hand-holding-usd"></i> Monto Recibido</label>
+        <input type="number" id="monto_recibido" placeholder="Ej: 50000" min="{{ total }}">
+      </div>
     </div>
-    <button type="submit" class="btn btn-success" style="width:100%;justify-content:center;">
-      ✓ Confirmar Pago
+
+    <div id="change-display" class="factura-total-row" style="display: none; border-top: 1px dashed var(--border); padding-top: 15px; color: var(--success); font-weight: 700;">
+      <span>SU CAMBIO (VUELTAS)</span>
+      <span id="vueltas_valor">$0</span>
+    </div>
+
+    <button type="submit" class="btn btn-success" style="width:100%;justify-content:center; margin-top: 15px;">
+      <i class="fas fa-check"></i> Confirmar Pago
     </button>
   </form>
 </div>
+
+<script>
+const total = {{ total }};
+const receivedInput = document.getElementById('monto_recibido');
+const changeDisplay = document.getElementById('change-display');
+const changeValue = document.getElementById('vueltas_valor');
+const metodoSelect = document.getElementById('metodo_pago');
+const receivedGroup = document.getElementById('received-group');
+
+metodoSelect.addEventListener('change', () => {
+    if (metodoSelect.value === 'efectivo') {
+        receivedGroup.style.display = 'block';
+    } else {
+        receivedGroup.style.display = 'none';
+        changeDisplay.style.display = 'none';
+    }
+});
+
+receivedInput.addEventListener('input', () => {
+    const received = parseFloat(receivedInput.value) || 0;
+    if (received > total) {
+        const change = received - total;
+        changeDisplay.style.display = 'flex';
+        changeValue.textContent = '$' + new Intl.NumberFormat("es-CO").format(change);
+    } else {
+        changeDisplay.style.display = 'none';
+    }
+});
+</script>
 {% endblock %}

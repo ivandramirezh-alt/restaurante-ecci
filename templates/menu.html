@@ -2,59 +2,124 @@
 {% block title %}Menú — El Buen Sabor{% endblock %}
 {% block content %}
 <div class="page-header">
-  <h1>Menú</h1>
+  <h1><i class="fas fa-utensils"></i> Menú del Restaurante</h1>
   {% if session.user_rol == 'admin' %}
   <a href="{{ url_for('menu.nuevo') }}" class="btn btn-primary">+ Agregar Plato</a>
   {% endif %}
 </div>
 
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>Plato</th>
-        <th>Categoría</th>
-        <th>Descripción</th>
-        <th>Precio</th>
-        <th>Disponible</th>
-        {% if session.user_rol == 'admin' %}<th>Acciones</th>{% endif %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for p in platos %}
-      <tr>
-        <td><strong>{{ p.nombre }}</strong></td>
-        <td>{{ p.categoria }}</td>
-        <td style="color:var(--muted); font-size:13px;">{{ p.descripcion or '—' }}</td>
-        <td><strong style="color:var(--accent);">${{ "{:,.0f}".format(p.precio) }}</strong></td>
-        <td>
-          {% if p.disponible %}
-            <span class="status status-disponible">Sí</span>
-          {% else %}
-            <span class="status status-ocupada">No</span>
-          {% endif %}
-        </td>
-        {% if session.user_rol == 'admin' %}
-        <td>
-          <div class="td-actions">
-            <a href="{{ url_for('menu.editar', id=p.id_plato) }}"
-               class="btn btn-sm btn-outline">Editar</a>
-            <a href="{{ url_for('menu.toggle', id=p.id_plato) }}"
-               class="btn btn-sm btn-outline">
-              {{ 'Deshabilitar' if p.disponible else 'Habilitar' }}
-            </a>
-          </div>
-        </td>
-        {% endif %}
-      </tr>
+<div class="menu-grid">
+  {% for p in platos %}
+  <div class="menu-card {% if not p.disponible %}disabled{% endif %}">
+    <div class="menu-card-img">
+      {% if p.imagen_url %}
+        <img src="{{ p.imagen_url }}" alt="{{ p.nombre }}">
       {% else %}
-      <tr>
-        <td colspan="6" style="text-align:center; color:var(--muted); padding:40px;">
-          No hay platos registrados.
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+        <div class="fallback-img">
+          {% if 'Bebida' in p.categoria %}<i class="fas fa-glass-whiskey fa-3x"></i>
+          {% elif 'Postre' in p.categoria %}<i class="fas fa-ice-cream fa-3x"></i>
+          {% elif 'Entrada' in p.categoria %}<i class="fas fa-bread-slice fa-3x"></i>
+          {% else %}<i class="fas fa-concierge-bell fa-3x"></i>
+          {% endif %}
+        </div>
+      {% endif %}
+      <span class="category-tag">{{ p.categoria }}</span>
+    </div>
+    <div class="menu-card-body">
+      <div class="menu-card-header">
+        <h3>{{ p.nombre }}</h3>
+        <span class="price">${{ "{:,.0f}".format(p.precio) }}</span>
+      </div>
+      <p class="desc">{{ p.descripcion or 'Sin descripción disponible.' }}</p>
+      
+      <div class="menu-card-footer">
+        {% if p.disponible %}
+          <span class="status status-disponible"><i class="fas fa-check"></i> Disponible</span>
+        {% else %}
+          <span class="status status-ocupada"><i class="fas fa-times"></i> Agotado</span>
+        {% endif %}
+        
+        {% if session.user_rol == 'admin' %}
+        <div class="admin-actions">
+          <a href="{{ url_for('menu.editar', id=p.id_plato) }}" title="Editar"><i class="fas fa-edit"></i></a>
+          <a href="{{ url_for('menu.toggle', id=p.id_plato) }}" title="{{ 'Deshabilitar' if p.disponible else 'Habilitar' }}">
+            <i class="fas {{ 'fa-eye-slash' if p.disponible else 'fa-eye' }}"></i>
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div style="grid-column: 1/-1; text-align: center; padding: 100px; color: var(--muted);">
+    <i class="fas fa-folder-open fa-4x" style="display: block; margin-bottom: 20px;"></i>
+    <p>No hay platos registrados en el menú todavía.</p>
+  </div>
+  {% endfor %}
 </div>
+
+<style>
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+}
+.menu-card {
+    background: var(--card);
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+.menu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border-color: var(--accent);
+}
+.menu-card.disabled { opacity: 0.7; grayscale: 0.5; }
+
+.menu-card-img {
+    height: 180px;
+    background: #111;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.menu-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.fallback-img { color: var(--border); }
+.category-tag {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(0,0,0,0.7);
+    color: var(--accent);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    backdrop-filter: blur(4px);
+}
+
+.menu-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+.menu-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.menu-card-header h3 { font-family: 'Playfair Display', serif; font-size: 18px; margin: 0; }
+.price { color: var(--accent); font-weight: 800; font-size: 16px; }
+
+.desc { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 20px; flex: 1; }
+
+.menu-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+}
+.admin-actions { display: flex; gap: 15px; }
+.admin-actions a { color: var(--muted); transition: color 0.2s; }
+.admin-actions a:hover { color: var(--accent); }
+</style>
 {% endblock %}

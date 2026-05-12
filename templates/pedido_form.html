@@ -2,79 +2,189 @@
 {% block title %}Nuevo Pedido — El Buen Sabor{% endblock %}
 {% block content %}
 <div class="page-header">
-  <h1>Nuevo Pedido</h1>
+  <h1><i class="fas fa-plus-circle"></i> Nuevo Pedido</h1>
   <a href="{{ url_for('pedidos.lista') }}" class="btn btn-outline">← Volver</a>
 </div>
 
-<div class="form-card">
+<div class="form-card" style="max-width: 800px; margin-bottom: 50px;">
   <form method="POST">
-    <div class="form-group">
-      <label>Cliente</label>
-      <select name="id_cliente" required>
-        <option value="">Seleccionar cliente...</option>
-        {% for c in clientes %}
-          <option value="{{ c.id_cliente }}">{{ c.nombre }} — {{ c.telefono }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>Mesa</label>
-      <select name="id_mesa" required>
-        <option value="">Seleccionar mesa...</option>
-        {% for m in mesas %}
-          <option value="{{ m.id_mesa }}">Mesa {{ m.numero }} ({{ m.capacidad }} personas)</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>Mesero</label>
-      <select name="id_empleado" required>
-        <option value="">Seleccionar mesero...</option>
-        {% for e in empleados %}
-          <option value="{{ e.id_empleado }}">{{ e.nombre }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>Platos del pedido</label>
-
-      <!-- Template oculto para JS -->
-      <template id="plato-template">
-        <option value="">Seleccionar plato...</option>
-        {% for p in platos %}
-          <option value="{{ p.id_plato }}">
-            {{ p.nombre }} — ${{ "{:,.0f}".format(p.precio) }} ({{ p.categoria }})
-          </option>
-        {% endfor %}
-      </template>
-
-      <div id="platos-lista" class="platos-list">
-        <div class="plato-row">
-          <select name="id_plato[]" required>
-            <option value="">Seleccionar plato...</option>
-            {% for p in platos %}
-              <option value="{{ p.id_plato }}">
-                {{ p.nombre }} — ${{ "{:,.0f}".format(p.precio) }} ({{ p.categoria }})
-              </option>
+    <div class="form-grid">
+      <!-- Sección Cliente -->
+      <div class="form-group">
+        <label><i class="fas fa-user"></i> Cliente</label>
+        <div style="display: flex; gap: 8px; flex-direction: column;">
+          <select name="id_cliente" id="select-cliente">
+            <option value="">Seleccionar cliente existente...</option>
+            {% for c in clientes %}
+              <option value="{{ c.id_cliente }}">{{ c.nombre }}</option>
             {% endfor %}
           </select>
-          <input type="number" name="cantidad[]" value="1" min="1" required>
-          <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>
+          <div style="text-align: center; color: var(--muted); font-size: 11px;">— O —</div>
+          <input type="text" name="nuevo_cliente_nombre" placeholder="Nombre de nuevo cliente..." id="input-nuevo-cliente">
         </div>
       </div>
 
-      <button type="button" class="btn btn-outline btn-sm" style="margin-top:10px;"
-              onclick="agregarPlato()">
-        + Agregar plato
+      <!-- Sección Mesero -->
+      <div class="form-group">
+        <label><i class="fas fa-id-badge"></i> Mesero Responsable</label>
+        <select name="id_empleado" required>
+          <option value="">¿Quién atiende?</option>
+          {% for e in empleados %}
+            <option value="{{ e.id_empleado }}">{{ e.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Selección de Mesa Visual -->
+    <div class="form-group">
+      <label><i class="fas fa-chair"></i> Seleccionar Mesa</label>
+      <div class="visual-selector-grid">
+        {% for m in mesas %}
+        <label class="visual-option">
+          <input type="radio" name="id_mesa" value="{{ m.id_mesa }}" required>
+          <div class="option-content">
+            <i class="fas fa-utensils fa-2x"></i>
+            <span class="option-title">Mesa {{ m.numero }}</span>
+            <span class="option-desc">{{ m.capacidad }} Personas</span>
+          </div>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Selección de Platos -->
+    <div class="form-group">
+      <label><i class="fas fa-hamburger"></i> Platos del pedido</label>
+      
+      <div id="platos-lista" class="platos-list-modern">
+        <div class="plato-row-modern">
+          <div class="plato-select-wrap">
+             <i class="fas fa-search"></i>
+             <select name="id_plato[]" required>
+                <option value="">Buscar plato...</option>
+                {% for p in platos %}
+                  <option value="{{ p.id_plato }}">
+                    {{ p.nombre }} — ${{ "{:,.0f}".format(p.precio) }}
+                  </option>
+                {% endfor %}
+              </select>
+          </div>
+          <input type="number" name="cantidad[]" value="1" min="1" required class="qty-input">
+          <button type="button" class="btn-remove" onclick="this.closest('.plato-row-modern').remove()"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-outline btn-sm" style="margin-top:15px; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;" onclick="agregarFilaPlato()">
+        <i class="fas fa-plus"></i> Agregar otro plato al pedido
       </button>
     </div>
 
-    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
-      Crear Pedido
-    </button>
+    <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+      <button type="submit" class="btn btn-primary btn-lg" style="width:100%; justify-content:center;">
+        <i class="fas fa-check-circle"></i> Confirmar y Crear Pedido
+      </button>
+    </div>
   </form>
 </div>
+
+<!-- Template definido como una cadena en JS para máxima compatibilidad -->
+<script>
+function agregarFilaPlato() {
+  const container = document.getElementById('platos-lista');
+  const div = document.createElement('div');
+  div.className = 'plato-row-modern';
+  
+  // Construimos las opciones del select dinámicamente desde el primer select existente
+  const originalSelect = document.querySelector('select[name="id_plato[]"]');
+  const optionsHtml = originalSelect.innerHTML;
+
+  div.innerHTML = `
+    <div class="plato-select-wrap">
+       <i class="fas fa-search"></i>
+       <select name="id_plato[]" required>
+          ${optionsHtml}
+       </select>
+    </div>
+    <input type="number" name="cantidad[]" value="1" min="1" required class="qty-input">
+    <button type="button" class="btn-remove" onclick="this.closest('.plato-row-modern').remove()"><i class="fas fa-trash"></i></button>
+  `;
+  container.appendChild(div);
+}
+
+// Lógica para alternar entre cliente existente y nuevo
+window.onload = () => {
+    const selectCliente = document.getElementById('select-cliente');
+    const inputNuevo = document.getElementById('input-nuevo-cliente');
+
+    if(selectCliente && inputNuevo) {
+        selectCliente.addEventListener('change', () => {
+            if(selectCliente.value) inputNuevo.value = '';
+        });
+        inputNuevo.addEventListener('input', () => {
+            if(inputNuevo.value) selectCliente.value = '';
+        });
+    }
+};
+</script>
+
+<style>
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+.visual-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.visual-option { cursor: pointer; position: relative; }
+.visual-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+.option-content {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 15px;
+    text-align: center;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+.visual-option input:checked + .option-content {
+    border-color: var(--accent);
+    background: rgba(212, 168, 83, 0.1);
+    transform: scale(1.05);
+}
+.option-title { font-weight: 600; font-size: 14px; color: var(--text); }
+.option-desc { font-size: 11px; color: var(--muted); }
+
+.platos-list-modern { display: flex; flex-direction: column; gap: 12px; }
+.plato-row-modern {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+.plato-select-wrap {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.plato-select-wrap i { position: absolute; left: 12px; color: var(--muted); font-size: 12px; z-index: 1; }
+.plato-select-wrap select { padding-left: 35px !important; width: 100%; position: relative; z-index: 0; }
+
+.qty-input { width: 80px !important; text-align: center; font-weight: 600; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+}
+</style>
 {% endblock %}

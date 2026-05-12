@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% block title %}Mapa de Mesas — El Buen Sabor{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1><i class="fas fa-map-marked-alt"></i> Mapa Visual del Restaurante</h1>
+        <p style="color: var(--muted); font-size: 14px; margin-top: 5px;">Distribución real de las mesas y su estado en vivo.</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <a href="{{ url_for('mesas.lista') }}" class="btn btn-outline"><i class="fas fa-list"></i> Vista de Lista</a>
+        {% if session.user_rol == 'admin' %}
+        <button onclick="toggleEditMode()" id="edit-mode-btn" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Editar Plano
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="restaurant-floor-plan" id="floor-plan">
+    <div class="kitchen-area">COCINA</div>
+    <div class="entrance-area">ENTRADA</div>
+    
+    {% for m in mesas %}
+    <div class="draggable-mesa {{ m.estado }}" 
+         id="mesa-{{ m.id_mesa }}"
+         style="left: {{ m.pos_x or (100 + loop.index0 * 120) }}px; top: {{ m.pos_y or 150 }}px;"
+         data-id="{{ m.id_mesa }}">
+        <div class="mesa-icon">
+            <i class="fas fa-utensils"></i>
+        </div>
+        <div class="mesa-label">Mesa {{ m.numero }}</div>
+        <div class="mesa-status-dot"></div>
+        
+        {% if m.estado == 'ocupada' %}
+        <div class="mesa-tooltip">Ocupada - {{ m.capacidad }} pax</div>
+        {% else %}
+        <div class="mesa-tooltip">Disponible</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<div id="save-map-bar" class="save-bar">
+    <span>Has modificado el plano. ¿Deseas guardar los cambios?</span>
+    <button onclick="savePositions()" class="btn btn-success btn-sm">Guardar Posiciones</button>
+</div>
+
+<style>
+.restaurant-floor-plan {
+    background: #111;
+    height: 600px;
+    border-radius: 24px;
+    position: relative;
+    border: 2px solid var(--border);
+    background-image: 
+        radial-gradient(circle, #1a1a1a 1px, transparent 1px);
+    background-size: 30px 30px;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+
+.kitchen-area {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 200px; height: 40px; background: #222; border: 1px solid var(--border);
+    border-top: none; border-radius: 0 0 10px 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: var(--muted); letter-spacing: 2px;
+}
+
+.entrance-area {
+    position: absolute; bottom: 0; right: 40px;
+    width: 100px; height: 10px; background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; color: #000;
+}
+
+.draggable-mesa {
+    position: absolute;
+    width: 90px; height: 90px;
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+    user-select: none;
+    z-index: 10;
+}
+
+.draggable-mesa:hover {
+    border-color: var(--accent);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.draggable-mesa.ocupada { border-color: #ef4444; }
+.draggable-mesa.ocupada .mesa-icon { color: #ef4444; }
+.draggable-mesa.ocupada .mesa-status-dot { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+
+.draggable-mesa.disponible { border-color: #34d399; }
+.draggable-mesa.disponible .mesa-icon { color: #34d399; }
+.draggable-mesa.disponible .mesa-status-dot { background: #34d399; box-shadow: 0 0 10px #34d399; }
+
+.mesa-icon { font-size: 24px; margin-bottom: 8px; transition: color 0.2s; }
+.mesa-label { font-size: 12px; font-weight: 700; color: var(--text); }
+.mesa-status-dot {
+    position: absolute; top: 10px; right: 10px;
+    width: 8px; height: 8px; border-radius: 50%;
+}
+
+.mesa-tooltip {
+    position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%);
+    background: #000; color: #fff; padding: 4px 10px; border-radius: 4px;
+    font-size: 10px; white-space: nowrap; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s; z-index: 100;
+}
+.draggable-mesa:hover .mesa-tooltip { opacity: 1; }
+
+.save-bar {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: var(--surface); border: 1px solid var(--accent);
+    padding: 15px 30px; border-radius: 50px; display: none;
+    align-items: center; gap: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    z-index: 1000;
+}
+
+/* Estilo para cuando se está editando */
+.restaurant-floor-plan.editing .draggable-mesa {
+    cursor: move;
+    animation: shake 0.5s infinite;
+}
+@keyframes shake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(0.5deg); }
+    75% { transform: rotate(-0.5deg); }
+    100% { transform: rotate(0deg); }
+}
+</style>
+
+<script>
+let editMode = false;
+let moved = false;
+
+function toggleEditMode() {
+    editMode = !editMode;
+    const plan = document.getElementById('floor-plan');
+    const btn = document.getElementById('edit-mode-btn');
+    
+    if(editMode) {
+        plan.classList.add('editing');
+        btn.innerHTML = '<i class="fas fa-times"></i> Salir de Edición';
+        btn.classList.replace('btn-primary', 'btn-outline');
+        enableDragging();
+    } else {
+        plan.classList.remove('editing');
+        btn.innerHTML = '<i class="fas fa-edit"></i> Editar Plano';
+        btn.classList.replace('btn-outline', 'btn-primary');
+        disableDragging();
+    }
+}
+
+function enableDragging() {
+    const mesas = document.querySelectorAll('.draggable-mesa');
+    mesas.forEach(mesa => {
+        mesa.onmousedown = function(event) {
+            if(!editMode) return;
+            
+            moved = true;
+            document.getElementById('save-map-bar').style.display = 'flex';
+
+            let shiftX = event.clientX - mesa.getBoundingClientRect().left;
+            let shiftY = event.clientY - mesa.getBoundingClientRect().top;
+
+            mesa.style.zIndex = 1000;
+            document.body.append(mesa);
+
+            moveAt(event.clientX, event.clientY);
+
+            function moveAt(pageX, pageY) {
+                const plan = document.getElementById('floor-plan').getBoundingClientRect();
+                let x = pageX - plan.left - shiftX;
+                let y = pageY - plan.top - shiftY;
+                
+                // Límites
+                x = Math.max(0, Math.min(x, plan.width - mesa.offsetWidth));
+                y = Math.max(0, Math.min(y, plan.height - mesa.offsetHeight));
+
+                mesa.style.left = x + 'px';
+                mesa.style.top = y + 'px';
+            }
+
+            function onMouseMove(event) {
+                moveAt(event.clientX, event.clientY);
+            }
+
+            document.addEventListener('mousemove', onMouseMove);
+
+            mesa.onmouseup = function() {
+                document.removeEventListener('mousemove', onMouseMove);
+                mesa.onmouseup = null;
+                document.getElementById('floor-plan').append(mesa);
+            };
+        };
+        mesa.ondragstart = function() { return false; };
+    });
+}
+
+function disableDragging() {
+    document.querySelectorAll('.draggable-mesa').forEach(m => m.onmousedown = null);
+}
+
+function savePositions() {
+    const positions = [];
+    document.querySelectorAll('.draggable-mesa').forEach(m => {
+        positions.push({
+            id: m.dataset.id,
+            x: parseInt(m.style.left),
+            y: parseInt(m.style.top)
+        });
+    });
+
+    fetch('{{ url_for("mesas.guardar_posiciones") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ positions: positions })
+    }).then(res => res.json())
+      .then(data => {
+          if(data.success) {
+              showToast('Mapa guardado correctamente', 'success');
+              document.getElementById('save-map-bar').style.display = 'none';
+          }
+      });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Gestión de Meseros — El Buen Sabor{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Gestión de Meseros</h1>
+  <a href="{{ url_for('admin.meseros_nuevo') }}" class="btn btn-primary">+ Nuevo Mesero</a>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Teléfono</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in meseros %}
+      <tr>
+        <td>#{{ m.id_empleado }}</td>
+        <td><strong>{{ m.nombre }}</strong></td>
+        <td>{{ m.telefono or '—' }}</td>
+        <td class="td-actions">
+          <a href="{{ url_for('admin.meseros_editar', id=m.id_empleado) }}" class="btn btn-outline btn-sm">✏️ Editar</a>
+          <a href="{{ url_for('admin.meseros_eliminar', id=m.id_empleado) }}" 
+             class="btn btn-danger btn-sm"
+             data-confirm="¿Realmente deseas eliminar al mesero {{ m.nombre }}? Esta acción no se puede deshacer.">
+             <i class="fas fa-trash"></i> Eliminar
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

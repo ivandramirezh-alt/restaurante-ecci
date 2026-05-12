@@ -9,7 +9,7 @@
 <div class="form-card">
   <form method="POST">
     <div class="form-group">
-      <label>Categoría</label>
+      <label><i class="fas fa-tag"></i> Categoría</label>
       <select name="id_categoria" required>
         <option value="">Seleccionar categoría...</option>
         {% for c in categorias %}
@@ -22,19 +22,27 @@
     </div>
 
     <div class="form-group">
-      <label>Nombre del plato</label>
+      <label><i class="fas fa-hamburger"></i> Nombre del plato</label>
       <input type="text" name="nombre" required
              value="{{ plato.nombre if plato else '' }}"
              placeholder="Ej: Bandeja Paisa">
     </div>
 
     <div class="form-group">
-      <label>Descripción</label>
+      <label><i class="fas fa-image"></i> URL de Imagen de Referencia</label>
+      <input type="url" name="imagen_url" 
+             value="{{ plato.imagen_url if plato else '' }}"
+             placeholder="https://ejemplo.com/imagen.jpg">
+      <small style="color: var(--muted); display: block; margin-top: 5px;">Pega un link de una imagen de internet.</small>
+    </div>
+
+    <div class="form-group">
+      <label><i class="fas fa-align-left"></i> Descripción</label>
       <textarea name="descripcion" placeholder="Ingredientes o descripción...">{{ plato.descripcion if plato else '' }}</textarea>
     </div>
 
     <div class="form-group">
-      <label>Precio (COP)</label>
+      <label><i class="fas fa-dollar-sign"></i> Precio (COP)</label>
       <input type="number" name="precio" required min="0" step="100"
              value="{{ plato.precio if plato else '' }}"
              placeholder="Ej: 18000">
@@ -49,7 +57,7 @@
     </div>
 
     <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
-      {{ 'Guardar cambios' if plato else 'Agregar plato' }}
+      <i class="fas fa-save"></i> {{ 'Guardar cambios' if plato else 'Agregar plato' }}
     </button>
   </form>
 </div>

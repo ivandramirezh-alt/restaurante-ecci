@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Comanda #{{ pedido.num_pedido }} — El Buen Sabor{% endblock %}
+{% block content %}
+<div class="page-header no-print">
+  <h1>Ticket de Cocina</h1>
+  <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print"></i> Imprimir</button>
+  <a href="{{ url_for('pedidos.lista') }}" class="btn btn-outline">Volver</a>
+</div>
+
+<div class="comanda-ticket">
+  <div class="comanda-header">
+    <h2>COMANDA #{{ pedido.num_pedido }}</h2>
+    <p>Mesa: <strong>{{ pedido.mesa }}</strong></p>
+    <p>Mesero: {{ pedido.empleado }}</p>
+    <p>Fecha: {{ pedido.fecha_hora.strftime('%H:%M:%S') }}</p>
+  </div>
+  
+  <div class="comanda-body">
+    <table class="comanda-table">
+      <thead>
+        <tr>
+          <th>CANT</th>
+          <th>PLATO / DESCRIPCIÓN</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in detalle %}
+        <tr>
+          <td class="qty">{{ d.cantidad }}</td>
+          <td>
+            <div class="item-name">{{ d.plato }}</div>
+            <div class="item-notes" style="font-size: 11px; color: #555;">{{ d.descripcion or '' }}</div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="comanda-footer">
+    <p>Favor preparar lo antes posible.</p>
+  </div>
+</div>
+
+<style>
+.comanda-ticket {
+    background: #fff;
+    color: #000;
+    padding: 30px;
+    max-width: 400px;
+    margin: 20px auto;
+    font-family: monospace;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.comanda-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 20px; }
+.comanda-header h2 { margin: 0; font-size: 24px; }
+.comanda-header p { margin: 5px 0; font-size: 14px; }
+
+.comanda-table { width: 100%; border-collapse: collapse; }
+.comanda-table th { text-align: left; border-bottom: 1px solid #000; padding: 5px; font-size: 12px; }
+.comanda-table td { padding: 10px 5px; border-bottom: 1px solid #eee; font-size: 15px; vertical-align: top; }
+.qty { font-weight: bold; font-size: 18px; width: 40px; }
+.item-name { font-weight: bold; }
+
+.comanda-footer { margin-top: 30px; text-align: center; font-style: italic; border-top: 1px solid #000; padding-top: 10px; font-size: 12px; }
+
+@media print {
+    body { background: #fff !important; }
+    .navbar, .no-print, .btn, .nav-brand, .nav-links, .nav-user { display: none !important; }
+    .comanda-ticket { margin: 0; padding: 0; border: none; box-shadow: none; max-width: 100%; width: 100%; }
+    .container { padding: 0; margin: 0; max-width: 100%; }
+}
+</style>
+{% endblock %}

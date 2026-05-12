@@ -26,12 +26,14 @@ from routes.pedidos import pedidos_bp
 from routes.menu    import menu_bp
 from routes.mesas   import mesas_bp
 from routes.factura import factura_bp
+from routes.admin   import admin_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(pedidos_bp)
 app.register_blueprint(menu_bp)
 app.register_blueprint(mesas_bp)
 app.register_blueprint(factura_bp)
+app.register_blueprint(admin_bp)
 
 @app.route('/')
 def index():

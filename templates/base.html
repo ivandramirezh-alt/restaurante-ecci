@@ -5,16 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Restaurante El Buen Sabor{% endblock %}</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 {% if session.user_id %}
 <nav class="navbar">
-  <div class="nav-brand">🍽️ El Buen Sabor</div>
+  <a href="{{ url_for('index') }}" class="nav-brand" style="text-decoration: none;">🍽️ El Buen Sabor</a>
   <div class="nav-links">
+    {% if session.user_rol == 'admin' %}
+    <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint and 'dashboard' in request.endpoint %}active{% endif %}">Dashboard</a>
+    {% endif %}
     <a href="{{ url_for('pedidos.lista') }}" class="{% if request.endpoint and 'pedidos' in request.endpoint %}active{% endif %}">Pedidos</a>
     <a href="{{ url_for('mesas.lista') }}"  class="{% if request.endpoint and 'mesas'   in request.endpoint %}active{% endif %}">Mesas</a>
     <a href="{{ url_for('menu.lista') }}"   class="{% if request.endpoint and 'menu'    in request.endpoint %}active{% endif %}">Menú</a>
+    {% if session.user_rol == 'admin' %}
+    <a href="{{ url_for('admin.meseros_lista') }}" class="{% if 'meseros' in request.endpoint %}active{% endif %}">Meseros</a>
+    <a href="{{ url_for('admin.usuarios_lista') }}" class="{% if 'usuarios' in request.endpoint %}active{% endif %}">Usuarios</a>
+    {% endif %}
   </div>
   <div class="nav-user">
     <span class="badge-rol {{ session.user_rol }}">{{ session.user_rol }}</span>
@@ -23,15 +32,35 @@
   </div>
 </nav>
 {% endif %}
-
 <main class="container">
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
   {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for category, message in messages %}
-      <div class="alert alert-{{ category }}">{{ message }}</div>
-    {% endfor %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash-message-data" data-message="{{ message }}" data-category="{{ category }}" style="display:none;"></div>
+      {% endfor %}
+    {% endif %}
   {% endwith %}
+
   {% block content %}{% endblock %}
 </main>
+
+<!-- Modal de Confirmación Coqueto -->
+<div id="custom-confirm" class="modal-overlay">
+  <div class="modal-content-confirm">
+    <div class="modal-icon-wrap">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h3 id="confirm-title">¿Estás seguro?</h3>
+    <p id="confirm-msg">Esta acción no se puede deshacer.</p>
+    <div class="modal-buttons">
+      <button id="confirm-cancel" class="btn btn-outline">Cancelar</button>
+      <button id="confirm-ok" class="btn btn-danger">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
 
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
